@@ -1,4 +1,8 @@
 src/** linguist-vendored
+src/** linguist-vendored
+deps/** linguist-vendored
+_deps/** linguist-vendored
+tests/** linguist-vendored
 
 # src/Client/** linguist-vendored
 # src/Server/VersionManager/** linguist-vendored
