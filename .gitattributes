@@ -1,2 +1,4 @@
-src/Client/** linguist-vendored
-src/Server/VersionManager/** linguist-vendored
+src/** linguist-vendored
+
+# src/Client/** linguist-vendored
+# src/Server/VersionManager/** linguist-vendored
