@@ -1,100 +1,73 @@
-> [!IMPORTANT]
-> **This project is strictly for academic purposes only.**
-> 
-> This project **cannot currently be used for a real server**. It is still in a very early developmental state.
-> The server and client are both lacking full (or any) support in numerous critical features; upgrades, wars, even basic exchanges, etc, let alone things like the Power-Up Store.
+# Knight Online — Rust Server Rewrite
 
-# Open Knight Online (OpenKO)
+A fork of [OpenKO/KnightOnline](https://github.com/Open-KO/KnightOnline) with the long-term goal of rewriting all server components from C++ to Rust while maintaining full compatibility with the 1.298 client and wire protocol.
 
-We started this project to learn more about how the MMORPG Knight Online works. MMORPGs are very intricate programs requiring knowledge in many areas of computer science such as TCP/IP, SQL server, performance tuning, 3D graphics and animation, load balancing, etc. Starting with the original leaked source, we have updated to DirectX 9, added function flags so that various file formats may be supported while remaining backwards compatible, and much, much more.
+> **Status:** Early development. The Login Server (formerly VersionManager) is the first component being rewritten. The remaining C++ servers (AIServer, Ebenezer, Aujard) run unchanged alongside it.
 
-If you have questions, or would like help getting started, feel free visit [our Discord](https://discord.gg/Uy73SMMjWS).
+## What this fork changes
 
-### Project Setup
+The original OpenKO project faithfully reconstructs the Knight Online 1.298 client and server in C++. This fork keeps the client and tools untouched but incrementally replaces the server executables with Rust implementations that speak the same binary protocol. The client can't tell the difference.
 
-Currently, OpenKO supports 2 separate sets of builds:
-1. Windows (Visual Studio/MSBuild): Server, Client, Tools (preferred for overall development) 
-2. Cross-platform (CMake): Server only at this time
+### Rewrite progress
 
-A guide to setting up and building this project is maintained on the wiki: 
-* [Windows Project Setup](https://github.com/Open-KO/KnightOnline/wiki/Project-Setup-(Windows))
-* [Linux Project Setup](https://github.com/Open-KO/KnightOnline/wiki/Project-Setup-(Linux))
+| Component | Original | Status |
+|-----------|----------|--------|
+| Login Server (VersionManager) | C++ | In progress — Rust |
+| AIServer | C++ | ⬜ Not started |
+| Ebenezer | C++ | ⬜ Not started |
+| Aujard | C++ | ⬜ Not started |
 
-The following setups are tested by our GitHub workflows and are known to build:
- - Windows 11 **(all projects: client, server, tools, etc)**
-   - Microsoft Visual Studio 2022 (v143)
-   - Microsoft Visual Studio 2026 (v145) (this is not yet tested by our workflows - it will be when GitHub updates their runners - but is routinely used in local development)
- - Ubuntu 24.04 **(only the server projects at this time)**
-   - clang 18 (current), 20 (bleeding edge)
-   - gcc 13 (current)
- - macOS 15 **(only the server projects at this time)**
-   - Apple Clang 15
+### Why Rust?
 
-### Visual Studio solutions
+This project serves two purposes: learning Rust through a real, non-trivial networked application and eventually producing a server stack that benefits from Rust's memory safety, performance and concurrency model. An MMORPG server is an ideal learning project because it touches TCP networking, binary protocol parsing, database access, concurrent state management and more.
 
-Solutions are available in the root directory:
-* `All.slnx` - all of the various projects.
-* `Client.slnx` - just the client project (WarFare) and its dependencies.
-* `ClientTools.slnx` - just the client tool projects (KscViewer, Launcher, Option) and their dependencies.
-* `Server.slnx` - just the server projects (AIServer, Aujard, Ebenezer, ItemManager, VersionManager) and their dependencies.
-* `Tests.slnx` - our various unit test projects.
-* `Tools.slnx` - just the tool projects (N3CE, N3FXE, N3ME, N3TexViewer, N3Viewer, SkyViewer,  TblEditor, UIE) and their dependencies.
+## Project structure
 
-## Goals
+```
+KnightOnline/
+  src/                          C++ source (client, server, tools), unchanged from OpenKO
+  rust/
+    login-server/               Rust rewrite of VersionManager
+      src/main.rs
+      Cargo.toml
+  All.slnx, Server.slnx, ...   Visual Studio solutions for the C++ components
+```
 
-At this early stage in development, the goal of this project is to replicate official client functionality while preserving accuracy and compatibility with the official client and server.
-This allows us to be able to side-by-side the client/server for testing purposes.
+The C++ and Rust parts are completely independent with separate build systems, separate executables and no FFI or linking between them. At runtime they are just processes that communicate over TCP, same as the original architecture.
 
-We do not intend to introduce features not found in the official client, nor introduce custom behaviour in general. You're very welcome to do so in forks however, but these do not mesh with our design goals and introduce complexity and potentially incompatibility with the official client. Essentially, in the interests of accuracy, we'd like to keep the client's behaviour as close to official as possible, where it makes sense.
+## Building and running
 
-We may deviate in some minor aspects where it makes sense to fix, for example, UI behaviour, or to provide the user with error messages where the client may not officially do so, but these changes do not affect compatibility while improving the user experience.
+### C++ servers (AIServer, Ebenezer, Aujard)
 
-Pull requests for such changes will be accepted on a case-by-case basis.
+Built with Visual Studio using the existing solution files. See the original setup guides:
 
-As a hard-and-fast rule, this means we **DO NOT** change client assets or the network protocol between the client and game server (Ebenezer).
+- [Windows Project Setup](https://github.com/Open-KO/KnightOnline/wiki/Project-Setup-(Windows))
+- [Linux Project Setup](https://github.com/Open-KO/KnightOnline/wiki/Project-Setup-(Linux))
 
-The client **MUST** remain compatible with the official client and the official server.
+### Rust Login Server
 
-We do not intend to keep the backend servers compatible with the official ones (e.g. our AI server standing in for the 1.298 AI server and vice versa).
-This is largely more work than really necessary to maintain. Side-by-side testing with the server files as a collective is more than sufficient here.
+Requires the [Rust toolchain](https://rustup.rs/).
 
-Late in development when side-by-side development is rarely necessary, it will make sense to start deviating from official behaviour for improvements and custom features.
-At such time, we will welcome such changes, but doing so this early just creates incompatibilities (making it harder to test them side-by-side) and unnecessarily diverts
-attention when there's so much official behaviour/features still to implement, update and fix.
+```
+cd rust/login-server
+cargo run              # development build
+cargo build --release  # optimized build, output at target/release/login-server.exe
+```
 
-## Intentional design decisions
+The Login Server listens on TCP port 15100 and handles client version checking, patching, authentication, server list and login-screen news.
 
-* _The project is currently focused around supporting the 1298/9 version of the game_. Version 1298/9 has most of the core functionality attributed to the game’s success. By ignoring later versions of the game we keep the system relatively simplistic. This allows us to strengthen the fundamental components of the game while minimizing the amount of reverse engineering necessary to make things work.
+### Running everything together
 
-* _We stick to the 1298/9 database schema_. To ensure compatibility with the 1298/9 version of the game we do not modify the basic database schema. This means the structure of the database and how information is stored in the database doesn’t change while we are working. This could change once the core functionality of the 1298/9 is in place.
+Launch the three C++ servers (AIServer, Ebenezer, Aujard) from Visual Studio as usual and run the Rust Login Server separately. The client connects to port 15100 and interacts with it exactly as it would with the original C++ VersionManager.
 
-## Contributing
+## Credits
 
-Considering contributing? Great! That's what this project's for.
-We'll typically accept most PRs, but please be aware of a few ground rules:
+This project is built on top of [OpenKO](https://github.com/Open-KO/KnightOnline), an open source reconstruction of the Knight Online 1.298 MMORPG. All credit for the original reverse engineering, C++ codebase, client restoration (DirectX 9 upgrade, file format support, tooling) and database schema goes to the OpenKO team and its contributors.
 
-### It must respect our project goals
-The PR must respect our goals as outlined above. That is, no asset changes, features must exist in 1.298 and behave correctly in both the official client & server, etc.
+OpenKO was started to learn how the MMORPG Knight Online works, covering areas like TCP/IP networking, SQL Server, performance tuning, 3D graphics, animation and load balancing. This fork shares that learning spirit, extending it into the Rust ecosystem.
 
-### It must be made / written by you
-The change must have been made / written by you. If contributing on behalf of someone else, then this should be acknowledged.
+If you're interested in the original C++ project or want to contribute to the faithful 1.298 reconstruction, visit the [OpenKO repository](https://github.com/Open-KO/KnightOnline) and their [Discord](https://discord.gg/Uy73SMMjWS).
 
-### No AI use
-This is somewhat an extension of the previous rule (as the code must be your own), but as enticing as AI is for "convenience", and how much it is pushed in virtually all areas of our day-to-day life, it is a poor replacement for a human's own critical thinking.
-The purpose of this project is for academic/learning purposes. You should not be trying to learn from AI.
+## License
 
-At absolute best, it is acceptable to use it to (after you've done so yourself already) verify your work and try to spot any issues. But even here, anything it says should be taken with a huge grain of salt.
-AI is highly inaccurate, makes things up on a whim (i.e. hallucinates) and is confident enough to persist in telling you that it's not until you push back (and even then, it may still not budge).
-
-Regarding the code quality itself, it will regurgitate patterns it's seen, good or bad (mostly bad). The code may not even address what you're intending it to address.
-
-We expect a certain level of code quality in our codebase (which we're happy to work with you to help improve your code before we merge it into our codebase -- **if you wrote it yourself**).
-AI, however, is a waste of everybody's time.
-
-AI usage is reasonably easy for us to detect.
-
-Please do not use AI. Thank you.
-
-<p align="center">
-	<img src="https://github.com/Open-KO/KnightOnline/blob/master/openko_example.png?raw=true" />
-</p>
+See [LICENSE](LICENSE) (inherited from OpenKO).
