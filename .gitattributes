@@ -1,12 +1,12 @@
-* linguist-vendored
-rust/** linguist-vendored=false
+src/Server/VersionManager/** linguist-vendored
+
+# * linguist-vendored
+# rust/** linguist-vendored=false
 
 # src/** linguist-vendored
-# src/** linguist-vendored
+# src/Client/** linguist-vendored
 # deps/** linguist-vendored
 # _deps/** linguist-vendored
 # tests/** linguist-vendored
 # cmake/** linguist-vendored
 # build_scripts/** linguist-vendored
-# src/Client/** linguist-vendored
-# src/Server/VersionManager/** linguist-vendored
