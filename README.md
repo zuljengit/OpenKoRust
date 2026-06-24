@@ -1,4 +1,4 @@
-# Knight Online — Rust Server Rewrite
+# Knight Online Rust Server Rewrite
 
 A fork of [OpenKO/KnightOnline](https://github.com/Open-KO/KnightOnline) with the long-term goal of rewriting all server components from C++ to Rust while maintaining full compatibility with the 1.298 client and wire protocol.
 
@@ -12,7 +12,7 @@ The original OpenKO project faithfully reconstructs the Knight Online 1.298 clie
 
 | Component | Original | Status |
 |-----------|----------|--------|
-| Login Server (VersionManager) | C++ | In progress — Rust |
+| Login Server (VersionManager) | C++ | In progress (Rust) |
 | AIServer | C++ | Not started |
 | Ebenezer | C++ | Not started |
 | Aujard | C++ | Not started |
