@@ -10,3 +10,7 @@ ftp_path = "/"
 ip = "127.0.0.1"
 name = "Server 1"
 user_limit = 1000
+
+[news]
+title = "Login Notice"
+message = "Welcome to Knight Online!"
